@@ -58,6 +58,7 @@ import { oldTranslate } from '../../../util/oldLangProvider';
 import { debounce, onTickEnd, rafPromise } from '../../../util/schedulers';
 import { getServerTime } from '../../../util/serverTime';
 import { callApi, cancelApiProgress } from '../../../api/gramjs';
+import { processMessages } from '../../../api/search';
 import {
   getIsSavedDialog,
   getUserFullName,
@@ -307,6 +308,10 @@ addActionHandler('loadMessage', async (global, actions, payload): Promise<void> 
       isDeleting,
     );
     setGlobal(global);
+  }
+
+  if (message) {
+    processMessages([message]);
   }
 });
 
