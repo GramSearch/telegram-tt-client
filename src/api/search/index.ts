@@ -25,3 +25,23 @@ export function processMessages(messages: ApiMessage[]) {
     payload: { messages },
   });
 }
+
+export function searchMessages(params: { chatId: string; content: string }) {
+  return new Promise((resolve) => {
+    worker.addEventListener('message', (event) => {
+      const { type, data } = event.data as { type: string; data: any };
+
+      if (type === 'storage:search:messages:data') {
+        resolve(data.messages);
+      }
+    });
+
+    worker.postMessage({
+      type: 'storage:search:messages',
+      payload: {
+        ...params,
+        useVector: true,
+      },
+    });
+  });
+}

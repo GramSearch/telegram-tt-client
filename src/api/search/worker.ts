@@ -8,12 +8,14 @@ ws.onopen = () => {
   console.log('>>> connected to search worker');
 
   // Register events
-  ws.send(JSON.stringify({ type: 'server:event:register', data: 'storage:search:messages:data' }));
+  ws.send(JSON.stringify({ type: 'server:event:register', data: { event: 'storage:search:messages:data' } }));
 };
 
 ws.onmessage = (event) => {
   // eslint-disable-next-line no-console
-  console.log('>>> message from search worker', JSON.parse(event.data));
+  console.log('>>> message to search worker', JSON.parse(event.data));
+
+  self.postMessage(JSON.parse(event.data));
 };
 
 ws.onclose = () => {
