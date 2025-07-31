@@ -1,7 +1,9 @@
 import type { Element, Root } from 'hast';
-import { lowlight } from 'lowlight/lib/core';
+import { createLowlight } from 'lowlight';
 import type { TeactNode } from '../lib/teact/teact';
 import Teact from '../lib/teact/teact';
+
+const lowlight = createLowlight();
 
 const SUPPORTED_LANGUAGES: Record<string, string[]> = {
   '1c': ['1с'], // Allow cyrillic
@@ -81,7 +83,7 @@ async function ensureLanguage(language: string) {
   if (!languagePromise) return false;
 
   const syntax = await languagePromise;
-  lowlight.registerLanguage(langCode, syntax.default);
+  lowlight.register(langCode, syntax.default);
   if (langCode === '1c') {
     lowlight.registerAlias('1c', '1с'); // Allow cyrillic
   }

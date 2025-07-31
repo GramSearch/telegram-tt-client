@@ -1,22 +1,22 @@
 import 'webpack-dev-server';
 
-import StatoscopeWebpackPlugin from '@statoscope/webpack-plugin';
-import dotenv from 'dotenv';
-import { GitRevisionPlugin } from 'git-revision-webpack-plugin';
-import HtmlWebpackPlugin from 'html-webpack-plugin';
-import MiniCssExtractPlugin from 'mini-css-extract-plugin';
-import path from 'path';
-import type { Compiler, Configuration } from 'webpack';
+import type { Compiler, Configuration } from '@rspack/core';
 import {
   ContextReplacementPlugin,
   DefinePlugin,
   EnvironmentPlugin,
   NormalModuleReplacementPlugin,
-  ProvidePlugin,
-} from 'webpack';
+  ProvidePlugin
+} from '@rspack/core';
+import dotenv from 'dotenv';
+import { GitRevisionPlugin } from 'git-revision-webpack-plugin';
+import HtmlWebpackPlugin from 'html-webpack-plugin';
+import path from 'path';
 
-import { PRODUCTION_URL } from './src/config';
-import { version as appVersion } from './package.json';
+import { createRequire } from 'module';
+import { PRODUCTION_URL } from './src/config.ts';
+import pkg from './package.json' with { type: 'json' };
+const { version: appVersion } = pkg;
 
 const {
   HEAD,
@@ -52,6 +52,9 @@ const CSP = `
   form-action 'none';`
   .replace(/\s+/g, ' ').trim();
 
+
+const require = createRequire(import.meta.url);
+
 export default function createConfig(
   _: any,
   { mode = 'production' }: { mode: 'none' | 'development' | 'production' },
@@ -68,25 +71,25 @@ export default function createConfig(
       hot: false,
       static: [
         {
-          directory: path.resolve(__dirname, 'public'),
+          directory: path.resolve(import.meta.dirname, 'public'),
         },
         {
-          directory: path.resolve(__dirname, 'node_modules/emoji-data-ios'),
+          directory: path.resolve(import.meta.dirname, 'node_modules/emoji-data-ios'),
         },
         {
-          directory: path.resolve(__dirname, 'node_modules/opus-recorder/dist'),
+          directory: path.resolve(import.meta.dirname, 'node_modules/opus-recorder/dist'),
         },
         {
-          directory: path.resolve(__dirname, 'src/lib/webp'),
+          directory: path.resolve(import.meta.dirname, 'src/lib/webp'),
         },
         {
-          directory: path.resolve(__dirname, 'src/lib/rlottie'),
+          directory: path.resolve(import.meta.dirname, 'src/lib/rlottie'),
         },
         {
-          directory: path.resolve(__dirname, 'src/lib/video-preview'),
+          directory: path.resolve(import.meta.dirname, 'src/lib/video-preview'),
         },
         {
-          directory: path.resolve(__dirname, 'src/lib/secret-sauce'),
+          directory: path.resolve(import.meta.dirname, 'src/lib/secret-sauce'),
         },
       ],
       devMiddleware: {
@@ -101,52 +104,63 @@ export default function createConfig(
       filename: '[name].[contenthash].js',
       chunkFilename: '[id].[chunkhash].js',
       assetModuleFilename: '[name].[contenthash][ext]',
-      path: path.resolve(__dirname, 'dist'),
+      path: path.resolve(import.meta.dirname, 'dist'),
       clean: true,
     },
 
     module: {
       rules: [
         {
-          test: /\.(ts|tsx|js|mjs|cjs)$/,
-          loader: 'babel-loader',
-          exclude: /node_modules/,
-        },
-        {
-          test: /\.css$/,
-          use: [
-            MiniCssExtractPlugin.loader,
-            {
-              loader: 'css-loader',
-              options: {
-                importLoaders: 1,
-                modules: {
-                  namedExport: false,
-                  auto: true,
+          test: /\.(j|t)s$/,
+          exclude: [/[\\/]node_modules[\\/]/],
+          loader: 'builtin:swc-loader',
+          options: {
+            jsc: {
+              parser: {
+                syntax: 'typescript',
+              },
+              externalHelpers: true,
+              transform: {
+                react: {
+                  runtime: 'automatic',
+                  development: mode === 'development',
+                  refresh: mode === 'development',
                 },
               },
             },
-            'postcss-loader',
-          ],
+            env: {
+              targets: 'Chrome >= 48',
+            },
+          },
         },
         {
-          test: /\.scss$/,
-          use: [
-            MiniCssExtractPlugin.loader,
-            {
-              loader: 'css-loader',
-              options: {
-                modules: {
-                  namedExport: false,
-                  exportLocalsConvention: 'camelCase',
-                  auto: true,
-                  localIdentName: APP_ENV === 'production' ? '[sha1:hash:base64:8]' : '[name]__[local]',
+          test: /\.(j|t)sx$/,
+          loader: 'builtin:swc-loader',
+          exclude: [/[\\/]node_modules[\\/]/],
+          options: {
+            jsc: {
+              parser: {
+                syntax: 'typescript',
+                tsx: true,
+              },
+              transform: {
+                react: {
+                  runtime: 'automatic',
+                  development: mode === 'development',
+                  refresh: mode === 'development',
                 },
               },
+              externalHelpers: true,
             },
-            'postcss-loader',
-            'sass-loader',
-          ],
+            env: {
+              targets: 'Chrome >= 48', // browser compatibility
+            },
+          },
+        },
+        {
+          test: /\.(sass|scss)$/,
+          type: 'css/auto', // 👈
+          use: ['sass-loader'],
         },
         {
           test: /\.(woff(2)?|ttf|eot|svg|png|jpg|tgs)(\?v=\d+\.\d+\.\d+)?$/,
@@ -174,6 +188,10 @@ export default function createConfig(
       },
     },
 
+    stats: {
+      warnings: false
+    },
+
     plugins: [
       // Clearing of the unused files for code highlight for smaller chunk count
       new ContextReplacementPlugin(
@@ -193,11 +211,6 @@ export default function createConfig(
         csp: CSP,
         template: 'src/index.html',
       }),
-      new MiniCssExtractPlugin({
-        filename: '[name].[contenthash].css',
-        chunkFilename: '[name].[chunkhash].css',
-        ignoreOrder: true,
-      }),
       new EnvironmentPlugin({
         APP_ENV,
         APP_MOCKED_CLIENT,
@@ -216,25 +229,27 @@ export default function createConfig(
       // Updates each dev re-build to provide current git branch or commit hash
       new DefinePlugin({
         APP_VERSION: JSON.stringify(appVersion),
-        APP_REVISION: DefinePlugin.runtimeValue(() => {
-          const { branch, commit } = getGitMetadata();
-          const shouldDisplayCommit = APP_ENV === 'staging' || !branch || branch === 'HEAD';
-          return JSON.stringify(shouldDisplayCommit ? commit : branch);
-        }, mode === 'development' ? true : []),
+        // TODO
+        // APP_REVISION: DefinePlugin.runtimeValue(() => {
+        //   const { branch, commit } = getGitMetadata();
+        //   const shouldDisplayCommit = APP_ENV === 'staging' || !branch || branch === 'HEAD';
+        //   return JSON.stringify(shouldDisplayCommit ? commit : branch);
+        // }, mode === 'development' ? true : []),
       }),
       new ProvidePlugin({
         Buffer: ['buffer', 'Buffer'],
       }),
-      new StatoscopeWebpackPlugin({
-        statsOptions: {
-          context: __dirname,
-        },
-        saveReportTo: path.resolve('./public/statoscope-report.html'),
-        saveStatsTo: path.resolve('./public/build-stats.json'),
-        normalizeStats: true,
-        open: 'file',
-        extensions: [new WebpackContextExtension()], // eslint-disable-line @typescript-eslint/no-use-before-define
-      }),
+      // TODO
+      // new StatoscopeWebpackPlugin({
+      //   statsOptions: {
+      //     context: import.meta.dirname,
+      //   },
+      //   saveReportTo: path.resolve('./public/statoscope-report.html'),
+      //   saveStatsTo: path.resolve('./public/build-stats.json'),
+      //   normalizeStats: true,
+      //   open: 'file',
+      //   extensions: [new WebpackContextExtension()], // eslint-disable-line @typescript-eslint/no-use-before-define
+      // }),
     ],
 
     devtool: APP_ENV === 'production' && IS_PACKAGED_ELECTRON ? undefined : 'source-map',
@@ -252,6 +267,12 @@ export default function createConfig(
         chunkIds: 'named',
       }),
     },
+
+    experiments: {
+      css: true
+    },
+
+    ignoreWarnings: [/sass/, _ => false],
   };
 }
 
