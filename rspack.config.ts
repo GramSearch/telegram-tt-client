@@ -3,6 +3,7 @@ import 'webpack-dev-server';
 import type { Compiler, Configuration } from '@rspack/core';
 import {
   ContextReplacementPlugin,
+  CssExtractRspackPlugin,
   DefinePlugin,
   EnvironmentPlugin,
   NormalModuleReplacementPlugin,
@@ -14,8 +15,8 @@ import HtmlWebpackPlugin from 'html-webpack-plugin';
 import path from 'path';
 
 import { createRequire } from 'module';
-import { PRODUCTION_URL } from './src/config.ts';
 import pkg from './package.json' with { type: 'json' };
+import { PRODUCTION_URL } from './src/config.ts';
 const { version: appVersion } = pkg;
 
 const {
@@ -111,7 +112,7 @@ export default function createConfig(
     module: {
       rules: [
         {
-          test: /\.(j|t)s$/,
+          test: /\.m?c?(j|t)s$/,
           exclude: [/[\\/]node_modules[\\/]/],
           loader: 'builtin:swc-loader',
           options: {
@@ -134,7 +135,7 @@ export default function createConfig(
           },
         },
         {
-          test: /\.(j|t)sx$/,
+          test: /\.m?c?(j|t)sx$/,
           loader: 'builtin:swc-loader',
           exclude: [/[\\/]node_modules[\\/]/],
           options: {
@@ -158,9 +159,40 @@ export default function createConfig(
           },
         },
         {
-          test: /\.(sass|scss)$/,
-          type: 'css/auto', // 👈
-          use: ['sass-loader'],
+          test: /\.css$/,
+          use: [
+            CssExtractRspackPlugin.loader,
+            {
+              loader: 'css-loader',
+              options: {
+                importLoaders: 1,
+                modules: {
+                  namedExport: false,
+                  auto: true,
+                },
+              },
+            },
+            'postcss-loader',
+          ],
+        },
+        {
+          test: /\.scss$/,
+          use: [
+            CssExtractRspackPlugin.loader,
+            {
+              loader: 'css-loader',
+              options: {
+                modules: {
+                  namedExport: false,
+                  exportLocalsConvention: 'camelCase',
+                  auto: true,
+                  localIdentName: APP_ENV === 'production' ? '[sha1:hash:base64:8]' : '[name]__[local]',
+                },
+              },
+            },
+            'postcss-loader',
+            'sass-loader',
+          ],
         },
         {
           test: /\.(woff(2)?|ttf|eot|svg|png|jpg|tgs)(\?v=\d+\.\d+\.\d+)?$/,
@@ -188,9 +220,9 @@ export default function createConfig(
       },
     },
 
-    stats: {
-      warnings: false
-    },
+    // stats: {
+    //   warnings: false
+    // },
 
     plugins: [
       // Clearing of the unused files for code highlight for smaller chunk count
@@ -239,6 +271,11 @@ export default function createConfig(
       new ProvidePlugin({
         Buffer: ['buffer', 'Buffer'],
       }),
+      new CssExtractRspackPlugin({
+        filename: '[name].[contenthash].css',
+        chunkFilename: '[name].[chunkhash].css',
+        ignoreOrder: true,
+      })
       // TODO
       // new StatoscopeWebpackPlugin({
       //   statsOptions: {
@@ -267,12 +304,6 @@ export default function createConfig(
         chunkIds: 'named',
       }),
     },
-
-    experiments: {
-      css: true
-    },
-
-    ignoreWarnings: [/sass/, _ => false],
   };
 }
 
