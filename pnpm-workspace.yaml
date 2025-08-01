@@ -1,0 +1,8 @@
+nodeLinker: hoisted
+
+onlyBuiltDependencies:
+  - '@parcel/watcher'
+  - core-js
+  - electron
+  - esbuild
+  - ttf2woff2

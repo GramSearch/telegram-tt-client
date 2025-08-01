@@ -2,6 +2,7 @@
   "name": "eslint-plugin-eslint-multitab-tt",
   "version": "0.0.0",
   "description": "eslint-multitab-tt",
+  "packageManager": "pnpm@10.14.0",
   "keywords": [
     "eslint",
     "eslintplugin",
@@ -28,9 +29,6 @@
     "eslint-plugin-node": "^11.1.0",
     "mocha": "^10.4.0",
     "npm-run-all": "^4.1.5"
-  },
-  "engines": {
-    "node": "^20 || ^22"
   },
   "peerDependencies": {
     "eslint": ">=8"

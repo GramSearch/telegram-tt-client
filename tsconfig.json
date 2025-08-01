@@ -15,7 +15,7 @@
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
@@ -26,8 +26,7 @@
     "tests",
     "plugins",
     "dev",
-    "webpack.config.ts",
-    "webpack-electron.config.ts",
-    "babel.config.js",
+    "rsbuild.config.ts",
+    "rsbuild-electron.config.ts",
   ]
 }
