@@ -2,8 +2,7 @@ import { defineConfig, rspack } from '@rsbuild/core';
 import { pluginSass } from '@rsbuild/plugin-sass';
 import dotenv from 'dotenv';
 import path from 'path';
-
-
+import { GitRevisionPlugin } from 'git-revision-webpack-plugin';
 import { version as appVersion } from './package.json';
 import { PRODUCTION_URL } from './src/config';
 
@@ -26,9 +25,6 @@ const {
   ELECTRON_HOST_URL = 'https://telegram-a-host',
   APP_TITLE = DEFAULT_APP_TITLE,
 } = process.env;
-
-
-dotenv.config();
 
 const CSP = `
   default-src 'self';
@@ -118,28 +114,29 @@ export default defineConfig({
           /src[\\/]lib[\\/]gramjs[\\/]client[\\/]TelegramClient\.js/,
           './MockClient.ts',
         )] : []),
+        // @ts-expect-error
         new rspack.EnvironmentPlugin({
           APP_ENV,
           APP_MOCKED_CLIENT,
           // eslint-disable-next-line no-null/no-null
           APP_NAME: null,
           APP_TITLE,
-          // RELEASE_DATETIME: Date.now(),
+          RELEASE_DATETIME: Date.now(),
           TELEGRAM_API_ID: undefined,
           TELEGRAM_API_HASH: undefined,
           // eslint-disable-next-line no-null/no-null
           TEST_SESSION: null,
-          // IS_PACKAGED_ELECTRON: false,
+          IS_PACKAGED_ELECTRON: false,
           ELECTRON_HOST_URL,
           BASE_URL,
         }),
         new rspack.DefinePlugin({
           APP_VERSION: JSON.stringify(appVersion),
-          // APP_REVISION: rspack.DefinePlugin.runtimeValue(() => {
-          //   const { branch, commit } = getGitMetadata();
-          //   const shouldDisplayCommit = APP_ENV === 'staging' || !branch || branch === 'HEAD';
-          //   return JSON.stringify(shouldDisplayCommit ? commit : branch);
-          // }, mode === 'development' ? true : []),
+          APP_REVISION: JSON.stringify((() => {
+            const { branch, commit } = getGitMetadata();
+            const shouldDisplayCommit = APP_ENV === 'staging' || !branch || branch === 'HEAD';
+            return shouldDisplayCommit ? commit : branch;
+          })()),
         }),
         new rspack.ProvidePlugin({
           Buffer: ['buffer', 'Buffer'],
@@ -202,4 +199,13 @@ export default defineConfig({
     ],
   },
 });
+
+
+function getGitMetadata() {
+  const gitRevisionPlugin = new GitRevisionPlugin();
+  const branch = HEAD || gitRevisionPlugin.branch();
+  const commit = gitRevisionPlugin.commithash()?.substring(0, 7);
+  return { branch, commit };
+}
+
 
