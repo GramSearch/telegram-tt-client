@@ -1,4 +1,4 @@
-import { defineConfig, rspack } from '@rsbuild/core';
+import { defineConfig, RsbuildConfig, rspack } from '@rsbuild/core';
 import { pluginSass } from '@rsbuild/plugin-sass';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -41,7 +41,7 @@ const CSP = `
   .replace(/\s+/g, ' ').trim();
 
 
-export default defineConfig({
+export const rsbuildConfig: RsbuildConfig = {
   plugins: [
     pluginSass(),
   ],
@@ -114,6 +114,7 @@ export default defineConfig({
           /src[\\/]lib[\\/]gramjs[\\/]client[\\/]TelegramClient\.js/,
           './MockClient.ts',
         )] : []),
+
         // @ts-expect-error
         new rspack.EnvironmentPlugin({
           APP_ENV,
@@ -130,6 +131,7 @@ export default defineConfig({
           ELECTRON_HOST_URL,
           BASE_URL,
         }),
+
         new rspack.DefinePlugin({
           APP_VERSION: JSON.stringify(appVersion),
           APP_REVISION: JSON.stringify((() => {
@@ -138,6 +140,7 @@ export default defineConfig({
             return shouldDisplayCommit ? commit : branch;
           })()),
         }),
+
         new rspack.ProvidePlugin({
           Buffer: ['buffer', 'Buffer'],
         }),
@@ -198,7 +201,9 @@ export default defineConfig({
       },
     ],
   },
-});
+}
+
+export default defineConfig(rsbuildConfig);
 
 
 function getGitMetadata() {
