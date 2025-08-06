@@ -91,8 +91,8 @@ export const rsbuildConfig: RsbuildConfig = {
             type: 'asset/resource',
           },
           {
-            test: /\.wasm$/,
-            type: 'asset/source',
+            test: /\.wasm|\.node|\.data$/,
+            type: 'asset/resource',
           },
           {
             test: /\.(txt|tl|strings)$/i,
