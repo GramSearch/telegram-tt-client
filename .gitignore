@@ -14,3 +14,4 @@ dev/perf/screenshot*
 dist/
 .eslintcache
 electron/
+data/

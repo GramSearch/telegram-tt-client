@@ -123,6 +123,8 @@
   },
   "dependencies": {
     "@cryptography/aes": "^0.1.1",
+    "@electric-sql/pglite": "^0.3.7",
+    "@node-rs/jieba": "^2.0.1",
     "@tg-search/common": "link:../telegram-search/packages/common",
     "@tg-search/core": "link:../telegram-search/packages/core",
     "@unbird/logg": "^1.1.2",

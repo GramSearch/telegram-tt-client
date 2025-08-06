@@ -25,9 +25,20 @@ export default defineConfig({
         },
       },
 
+      // externals: {
+      //   stream: 'commonjs stream',
+      // },
+
       tools: {
         rspack: {
           target: 'electron-main',
+
+          // externalsType: 'commonjs-import',
+          externals: {
+            '@electric-sql/pglite': '@electric-sql/pglite',
+            '@electric-sql/pglite/vector': '@electric-sql/pglite/vector',
+            '@node-rs/jieba': '@node-rs/jieba',
+          },
 
           optimization: {
             splitChunks: false,
@@ -79,7 +90,7 @@ export default defineConfig({
             // }
           ],
 
-          ignoreWarnings: [/jieba/]
+          // ignoreWarnings: [/jieba/]
         }
       },
 
