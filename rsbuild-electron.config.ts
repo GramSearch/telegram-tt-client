@@ -1,9 +1,9 @@
 import { defineConfig, rspack } from '@rsbuild/core';
-import { rsbuildConfig } from './rsbuild.config';
+import dotenv from 'dotenv';
 
 import { PRODUCTION_URL } from './src/config';
+import { rsbuildConfig } from './rsbuild.config';
 
-import dotenv from 'dotenv';
 dotenv.config();
 
 // GitHub workflow uses an empty string as the default value if it's not in repository variables, so we cannot define a default value here
@@ -25,7 +25,7 @@ export default defineConfig({
     main: {
       source: {
         entry: {
-          'main': './src/electron/main.ts',
+          main: './src/electron/main.ts',
         },
       },
 
@@ -40,12 +40,12 @@ export default defineConfig({
               BASE_URL,
               IS_PREVIEW: false,
             }),
-          ]
+          ],
 
           // externals: {
           //   electron: 'require("electron")',
           // },
-        }
+        },
       },
 
       output: {
@@ -59,8 +59,8 @@ export default defineConfig({
     preload: {
       source: {
         entry: {
-          'preload': './src/electron/preload.ts',
-        }
+          preload: './src/electron/preload.ts',
+        },
       },
 
       tools: {
@@ -74,12 +74,12 @@ export default defineConfig({
               BASE_URL,
               IS_PREVIEW: false,
             }),
-          ]
+          ],
 
           // externals: {
           //   electron: 'require("electron")',
           // },
-        }
+        },
       },
 
       output: {
@@ -101,7 +101,6 @@ export default defineConfig({
           //   clean: false
           // }
 
-
           plugins: [
             // @ts-expect-error
             new rspack.EnvironmentPlugin({
@@ -114,7 +113,7 @@ export default defineConfig({
           ...rsbuildConfig.tools?.rspack,
         },
         ...rsbuildConfig.tools,
-      }
-    }
+      },
+    },
   },
 });

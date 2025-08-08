@@ -7,3 +7,6 @@ onlyBuiltDependencies:
   - esbuild
   - ttf2woff2
   - unrs-resolver
+
+packages:
+  - dev/eslint-multitab
