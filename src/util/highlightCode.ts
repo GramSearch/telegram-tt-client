@@ -1,9 +1,7 @@
 import type { Element, Root } from 'hast';
-import {createLowlight} from 'lowlight';
+import { lowlight } from 'lowlight/lib/core';
 import type { TeactNode } from '../lib/teact/teact';
 import Teact from '../lib/teact/teact';
-
-const lowlight = createLowlight();
 
 const SUPPORTED_LANGUAGES: Record<string, string[]> = {
   '1c': ['1с'], // Allow cyrillic
