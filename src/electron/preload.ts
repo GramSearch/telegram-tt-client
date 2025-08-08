@@ -17,6 +17,7 @@ const electronApi: ElectronApi = {
   setIsTrayIconEnabled: (value: boolean) => ipcRenderer.invoke(ElectronAction.SET_IS_TRAY_ICON_ENABLED, value),
   getIsTrayIconEnabled: () => ipcRenderer.invoke(ElectronAction.GET_IS_TRAY_ICON_ENABLED),
   restoreLocalStorage: () => ipcRenderer.invoke(ElectronAction.RESTORE_LOCAL_STORAGE),
+  sendToSearchCore: (message: any) => ipcRenderer.send(ElectronAction.SEND_TO_SEARCH_CORE, message),
 
   on: (eventName: ElectronEvent, callback) => {
     const subscription = (event: IpcRendererEvent, ...args: any) => callback(...args);
