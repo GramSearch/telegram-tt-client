@@ -50,7 +50,7 @@ export default defineConfig({
 
       output: {
         distPath: {
-          root: 'electron',
+          root: 'dist-electron',
           js: '.',
         },
       },
@@ -84,7 +84,7 @@ export default defineConfig({
 
       output: {
         distPath: {
-          root: 'electron',
+          root: 'dist-electron',
           js: '.',
         },
       },

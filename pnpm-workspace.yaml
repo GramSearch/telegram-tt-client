@@ -6,3 +6,4 @@ onlyBuiltDependencies:
   - electron
   - esbuild
   - ttf2woff2
+  - unrs-resolver

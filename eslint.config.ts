@@ -1,0 +1,27 @@
+import config from '@antfu/eslint-config'
+
+export default await config({
+  react: true,
+  rules: {
+    'style/semi': ['error', 'always'],
+  },
+  ignores: [
+    '**/*.tsx',
+    'src/lib/rlottie/rlottie-wasm.js',
+    'src/lib/video-preview/polyfill',
+    'src/lib/fasttextweb/fasttext-wasm.js',
+    'src/lib/gramjs/tl/types-generator/template.ts',
+    'src/lib/gramjs/tl/api.d.ts',
+    'src/lib/gramjs/tl/apiTl.ts',
+    'src/lib/gramjs/tl/schemaTl.ts',
+    'src/lib/lovely-chart',
+    'src/lib/music-metadata-browser',
+    'jest.config.js',
+    'src/lib/secret-sauce/',
+    'playwright.config.ts',
+    'dist',
+    'dist-electron',
+    'public',
+    'deploy/update_version.js',
+  ]
+})

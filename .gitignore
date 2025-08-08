@@ -11,5 +11,5 @@ dev/perf/screenshot*
 .DS_store
 dist/
 .eslintcache
-electron/
+dist-electron/
 data/
