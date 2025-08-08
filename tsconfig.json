@@ -2,24 +2,24 @@
   "compilerOptions": {
     // We don't care about this since Webpack runs Babel after TypeScript
     "target": "esnext",
+    "jsx": "react",
     "lib": [
       "dom",
       "dom.iterable",
       "webworker",
       "es2021"
     ],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
     "module": "esnext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
-    "isolatedModules": true,
+    "allowJs": true,
+    "strict": true,
     "noEmit": true,
-    "jsx": "react"
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "skipLibCheck": true
   },
   "include": [
     "src",
@@ -27,6 +27,6 @@
     "plugins",
     "dev",
     "rsbuild.config.ts",
-    "rsbuild-electron.config.ts",
+    "rsbuild-electron.config.ts"
   ]
 }
