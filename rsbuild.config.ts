@@ -1,10 +1,12 @@
-import { defineConfig, RsbuildConfig, rspack } from '@rsbuild/core';
+import type { RsbuildConfig } from '@rsbuild/core';
+import { defineConfig, rspack } from '@rsbuild/core';
 import { pluginSass } from '@rsbuild/plugin-sass';
 import dotenv from 'dotenv';
-import path from 'path';
 import { GitRevisionPlugin } from 'git-revision-webpack-plugin';
-import { version as appVersion } from './package.json';
+import path from 'path';
+
 import { PRODUCTION_URL } from './src/config';
+import { version as appVersion } from './package.json';
 
 const {
   HEAD,
@@ -40,7 +42,6 @@ const CSP = `
   form-action 'none';`
   .replace(/\s+/g, ' ').trim();
 
-
 export const rsbuildConfig: RsbuildConfig = {
   plugins: [
     pluginSass(),
@@ -53,14 +54,14 @@ export const rsbuildConfig: RsbuildConfig = {
   },
 
   dev: {
-    assetPrefix: '/'
+    assetPrefix: '/',
   },
 
   tools: {
     postcss: {
       postcssOptions: {
-        plugins: ['autoprefixer']
-      }
+        plugins: ['autoprefixer'],
+      },
     },
 
     htmlPlugin: {
@@ -98,11 +99,11 @@ export const rsbuildConfig: RsbuildConfig = {
             test: /\.(txt|tl|strings)$/i,
             type: 'asset/source',
           },
-        ]
+        ],
       },
 
       ignoreWarnings: [
-        /sass/
+        /sass/,
       ],
 
       plugins: [
@@ -161,7 +162,7 @@ export const rsbuildConfig: RsbuildConfig = {
           chunkIds: 'named',
         }),
       },
-    }
+    },
   },
 
   resolve: {
@@ -171,7 +172,7 @@ export const rsbuildConfig: RsbuildConfig = {
       buffer: require.resolve('buffer/'),
       fs: false,
       crypto: false,
-    }
+    },
   },
 
   server: {
@@ -201,10 +202,9 @@ export const rsbuildConfig: RsbuildConfig = {
       },
     ],
   },
-}
+};
 
 export default defineConfig(rsbuildConfig);
-
 
 function getGitMetadata() {
   const gitRevisionPlugin = new GitRevisionPlugin();
@@ -212,5 +212,3 @@ function getGitMetadata() {
   const commit = gitRevisionPlugin.commithash()?.substring(0, 7);
   return { branch, commit };
 }
-
-

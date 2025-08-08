@@ -1,8 +1,9 @@
-import { ApiMessage, ApiPeer, MAIN_THREAD_ID } from '../../../api/types';
+import type { ApiMessage, ApiPeer } from '../../../api/types';
 import type {
   ChatMediaSearchParams, ChatMediaSearchSegment, LoadingState, SharedMediaType, ThreadId,
 } from '../../../types';
 import type { ActionReturnType, GlobalState, TabArgs } from '../../types';
+import { MAIN_THREAD_ID } from '../../../api/types';
 import { LoadMoreDirection } from '../../../types';
 
 import {
