@@ -3,6 +3,7 @@ export enum ElectronEvent {
   UPDATE_ERROR = 'update-error',
   UPDATE_AVAILABLE = 'update-available',
   DEEPLINK = 'deeplink',
+  SEARCH_CORE_MESSAGE = 'search-core-message',
 }
 
 export enum ElectronAction {
@@ -17,6 +18,7 @@ export enum ElectronAction {
   SET_IS_TRAY_ICON_ENABLED = 'set-is-tray-icon-enabled',
   GET_IS_TRAY_ICON_ENABLED = 'get-is-tray-icon-enabled',
   RESTORE_LOCAL_STORAGE = 'restore-local-storage',
+  SEND_TO_SEARCH_CORE = 'send-to-search-core',
 }
 
 export type TrafficLightPosition = 'standard' | 'lowered';
@@ -33,6 +35,7 @@ export interface ElectronApi {
   setIsTrayIconEnabled: (value: boolean) => Promise<void>;
   getIsTrayIconEnabled: () => Promise<boolean>;
   restoreLocalStorage: () => Promise<void>;
+  sendToSearchCore: (message: any) => void;
   on: (eventName: ElectronEvent, callback: any) => VoidFunction;
 }
 

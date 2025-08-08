@@ -1,38 +1,32 @@
 // eslint-disable-next-line no-console
 console.log('>>> SEARCH WORKER');
 
-const ws = new WebSocket('ws://localhost:3000/ws?sessionId=ecc944e0-edc4-4417-afa8-683bd66446c9');
+// Keep track of registered events
+const registeredEvents = new Set<string>();
 
-ws.onopen = () => {
-  // eslint-disable-next-line no-console
-  console.log('>>> connected to search worker');
+// Initialize by registering for search events
+registeredEvents.add('storage:search:messages:data');
 
-  // Register events
-  ws.send(JSON.stringify({ type: 'server:event:register', data: { event: 'storage:search:messages:data' } }));
-};
+// Send registration message to main thread
+self.postMessage({
+  type: 'server:event:register',
+  data: { event: 'storage:search:messages:data' },
+});
 
-ws.onmessage = (event) => {
-  // eslint-disable-next-line no-console
-  console.log('>>> message to search worker', JSON.parse(event.data));
-
-  self.postMessage(JSON.parse(event.data));
-};
-
-ws.onclose = () => {
-  // eslint-disable-next-line no-console
-  console.log('>>> disconnected from search worker');
-};
-
-ws.onerror = (event) => {
-  // eslint-disable-next-line no-console
-  console.log('>>> error from search worker', event);
-};
-
-self.onmessage = (msg) => {
-  const { type, payload } = msg.data as { type: string; payload: any };
+// Handle messages from main thread (which come from search core via IPC)
+self.onmessage = (event) => {
+  const message = event.data;
 
   // eslint-disable-next-line no-console
-  console.log('>>> message from search worker', type, payload);
+  console.log('>>> message received in worker from main thread', message);
 
-  ws.send(JSON.stringify({ type, data: payload }));
+  // Check if this is a response from search core
+  if (message.type && registeredEvents.has(message.type)) {
+    // Forward the response back to main thread
+    self.postMessage(message);
+  } else if (message.type) {
+    // This is a request from main thread to search core
+    // Forward it to main thread which will send via IPC
+    self.postMessage(message);
+  }
 };

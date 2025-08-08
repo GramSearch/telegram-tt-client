@@ -17,10 +17,6 @@ const {
 export default defineConfig({
   // mode: 'production',
 
-  // output: {
-  //   cleanDistPath: false,
-  // },
-
   environments: {
     main: {
       source: {
@@ -29,9 +25,41 @@ export default defineConfig({
         },
       },
 
+      // externals: {
+      //   stream: 'commonjs stream',
+      // },
+
       tools: {
         rspack: {
           target: 'electron-main',
+
+          // externalsType: 'commonjs-import',
+          externals: {
+            '@electric-sql/pglite': '@electric-sql/pglite',
+            '@electric-sql/pglite/vector': '@electric-sql/pglite/vector',
+            '@node-rs/jieba': '@node-rs/jieba',
+          },
+
+          optimization: {
+            splitChunks: false,
+          },
+
+          experiments: {
+            outputModule: true
+          },
+
+          output: {
+            module: true,
+          },
+
+          module: {
+            rules: [
+              {
+                test: /\.wasm|\.node|\.data$/,
+                type: 'asset/resource',
+              },
+            ],
+          },
 
           plugins: [
             // @ts-expect-error
@@ -40,15 +68,34 @@ export default defineConfig({
               BASE_URL,
               IS_PREVIEW: false,
             }),
-          ]
 
-          // externals: {
-          //   electron: 'require("electron")',
-          // },
+            // {
+            //   apply(compiler) {
+            //     const { RuntimeGlobals } = compiler.webpack;
+            //     compiler.hooks.compilation.tap('CustomPlugin', compilation => {
+            //       compilation.hooks.runtimeModule.tap(
+            //         'CustomPlugin',
+            //         (module, chunk) => {
+            //           if (module.name === 'public_path' && chunk.name === 'main') {
+            //             // const originSource = module.source.source.toString('utf-8');
+            //             module.source.source = Buffer.from(
+            //               `${RuntimeGlobals.publicPath} = "${__dirname}/electron/";\n`,
+            //               'utf-8',
+            //             );
+            //           }
+            //         },
+            //       );
+            //     });
+            //   },
+            // }
+          ],
+
+          // ignoreWarnings: [/jieba/]
         }
       },
 
       output: {
+        // assetPrefix: './',
         distPath: {
           root: 'electron',
           js: '.',
@@ -75,10 +122,6 @@ export default defineConfig({
               IS_PREVIEW: false,
             }),
           ]
-
-          // externals: {
-          //   electron: 'require("electron")',
-          // },
         }
       },
 
@@ -96,11 +139,6 @@ export default defineConfig({
       tools: {
         rspack: {
           target: 'electron-renderer',
-
-          // output: {
-          //   clean: false
-          // }
-
 
           plugins: [
             // @ts-expect-error
