@@ -8,9 +8,8 @@ import { initDeeplink } from './deeplink';
 import { IS_MAC_OS, IS_PRODUCTION, IS_WINDOWS } from './utils';
 import { createWindow, setupCloseHandlers, setupElectronActionHandlers } from './window';
 import { ElectronAction, ElectronEvent } from '../types/electron';
-import { createCoreInstance, initDrizzle } from '@tg-search/core';
+import { createCoreInstance, initDrizzle, initLogger } from '@tg-search/core';
 import { initConfig } from '@tg-search/common/node';
-import { initLogger, useLogger } from '@unbird/logg';
 import { DatabaseType } from '@tg-search/common';
 
 initDeeplink();
@@ -33,33 +32,58 @@ app.on('ready', async () => {
     app.setAppUserModelId(app.getName());
   }
 
-  initLogger();
-  const logger = useLogger();
-  const config = await initConfig();
-  initDrizzle(logger, {
-    ...config,
-    database: {
-      type: DatabaseType.PGLITE,
-    },
-  }, path.resolve(__dirname, '../data/drizzle.db'));
+  try {
+    const logger = initLogger()
+    const config = await initConfig();
 
-  const ctx = createCoreInstance(config);
+    // Add validation before initializing
+    if (!config || !config.database) {
+      logger.error('Config validation failed');
+      return;
+    }
 
-  // Handle messages from renderer process to search core
-  ipcMain.on(ElectronAction.SEND_TO_SEARCH_CORE, (event, msg) => {
-    ctx.emitter.emit('message:process', msg);
-  });
+    await initDrizzle(logger, {
+      ...config,
+      database: {
+        type: DatabaseType.PGLITE,
+      },
+    }, path.resolve(__dirname, '../data/drizzle.db'));
 
-  // Handle messages from search core to renderer process
-  ctx.emitter.on('message:process', (message) => {
-    // Send to all windows
-    const windows = require('./utils').windows;
-    windows.forEach((window: any) => {
-      window.webContents.send(ElectronEvent.SEARCH_CORE_MESSAGE, message);
+    const ctx = createCoreInstance(config);
+
+    // Add error handling for IPC message processing
+    ipcMain.on(ElectronAction.SEND_TO_SEARCH_CORE, (event, msg) => {
+      try {
+        // Validate message structure before processing
+        if (!msg || !msg.payload || !msg.payload.messages) {
+          logger.warn('Invalid message format received:', msg);
+          return;
+        }
+
+        ctx.emitter.emit('message:process', msg);
+      } catch (error) {
+        logger.error('Error processing search core message:', error);
+      }
     });
-  });
 
+    // Add error handling for core events
+    ctx.emitter.on('message:process', (message) => {
+      try {
+        const windows = require('./utils').windows;
+        windows.forEach((window: any) => {
+          if (window && !window.isDestroyed()) {
+            window.webContents.send(ElectronEvent.SEARCH_CORE_MESSAGE, message);
+          }
+        });
+      } catch (error) {
+        logger.error('Error sending message to renderer:', error);
+      }
+    });
 
+  } catch (error) {
+    console.error('Failed to initialize search core:', error);
+    // Continue without search functionality
+  }
 
   createWindow();
   setupElectronActionHandlers();
