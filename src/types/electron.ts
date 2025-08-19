@@ -23,6 +23,30 @@ export enum ElectronAction {
 
 export type TrafficLightPosition = 'standard' | 'lowered';
 
+// Re-export types from @tg-search/core and @tg-search/common for type safety
+// Use core package types instead of redefining them
+
+// Specific message interface for our IPC layer
+export interface SearchCoreIPCMessage {
+  type: string;
+  payload?: unknown;
+  data?: unknown;
+}
+
+// Message validation helper types
+export interface MessageProcessIPCPayload {
+  messages: import('../api/types').ApiMessage[];
+}
+
+export interface SearchMessagesIPCPayload {
+  chatId: string;
+  content: string;
+  useVector?: boolean;
+}
+
+// Type-safe event callback
+export type SearchCoreEventCallback = (message: SearchCoreIPCMessage) => void;
+
 export interface ElectronApi {
   isFullscreen: () => Promise<boolean>;
   installUpdate: () => Promise<void>;
@@ -35,8 +59,8 @@ export interface ElectronApi {
   setIsTrayIconEnabled: (value: boolean) => Promise<void>;
   getIsTrayIconEnabled: () => Promise<boolean>;
   restoreLocalStorage: () => Promise<void>;
-  sendToSearchCore: (message: any) => void;
-  on: (eventName: ElectronEvent, callback: any) => VoidFunction;
+  sendToSearchCore: (message: SearchCoreIPCMessage) => void;
+  on: (eventName: ElectronEvent, callback: SearchCoreEventCallback) => VoidFunction;
 }
 
 declare global {

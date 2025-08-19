@@ -87,7 +87,7 @@ export function createWindow(url?: string) {
     }
   });
 
-  window.on('page-title-updated', (event: Event) => {
+  window.on('page-title-updated', (event) => {
     event.preventDefault();
   });
 
@@ -194,7 +194,14 @@ export function setupElectronActionHandlers() {
       return;
     }
 
-    getCurrentWindow()?.setTrafficLightPosition(TRAFFIC_LIGHT_POSITION[position]);
+    const currentWindow = getCurrentWindow();
+    if (currentWindow) {
+      try {
+        (currentWindow as any).setTrafficLightPosition(TRAFFIC_LIGHT_POSITION[position]);
+      } catch (error) {
+        console.warn('Failed to set traffic light position:', error);
+      }
+    }
   });
 
   ipcMain.handle(ElectronAction.SET_IS_AUTO_UPDATE_ENABLED, async (_, isAutoUpdateEnabled: boolean) => {

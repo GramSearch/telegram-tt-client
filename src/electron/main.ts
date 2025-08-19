@@ -7,10 +7,10 @@ import path from 'path';
 import { initDeeplink } from './deeplink';
 import { IS_MAC_OS, IS_PRODUCTION, IS_WINDOWS } from './utils';
 import { createWindow, setupCloseHandlers, setupElectronActionHandlers } from './window';
-import { ElectronAction, ElectronEvent } from '../types/electron';
 import { createCoreInstance, initDrizzle, initLogger } from '@tg-search/core';
 import { initConfig } from '@tg-search/common/node';
 import { DatabaseType } from '@tg-search/common';
+import { SearchCoreHandler } from './searchCoreHandler';
 
 initDeeplink();
 
@@ -51,34 +51,8 @@ app.on('ready', async () => {
 
     const ctx = createCoreInstance(config);
 
-    // Add error handling for IPC message processing
-    ipcMain.on(ElectronAction.SEND_TO_SEARCH_CORE, (event, msg) => {
-      try {
-        // Validate message structure before processing
-        if (!msg || !msg.payload || !msg.payload.messages) {
-          logger.warn('Invalid message format received:', msg);
-          return;
-        }
-
-        ctx.emitter.emit('message:process', msg);
-      } catch (error) {
-        logger.error('Error processing search core message:', error);
-      }
-    });
-
-    // Add error handling for core events
-    ctx.emitter.on('message:process', (message) => {
-      try {
-        const windows = require('./utils').windows;
-        windows.forEach((window: any) => {
-          if (window && !window.isDestroyed()) {
-            window.webContents.send(ElectronEvent.SEARCH_CORE_MESSAGE, message);
-          }
-        });
-      } catch (error) {
-        logger.error('Error sending message to renderer:', error);
-      }
-    });
+    // Use type-safe search core handler - much cleaner!
+    new SearchCoreHandler(ctx, logger);
 
   } catch (error) {
     console.error('Failed to initialize search core:', error);
